@@ -2,6 +2,7 @@ import os
 from nonebot import MessageSegment
 from hoshino import Service, priv, R
 from . import getvoiece
+from .youdaotranslate import translate
 
 sv_help = '''
 【柚子中配】+ （角色id） + 文本
@@ -36,16 +37,16 @@ async def youzi_voice_cn(bot, ev):
     voice_send = R.get('record', 'demo.wav') 
     path_wav = os.path.abspath(voice_send.path)
     if len(content) == 1:
-        text_chjp = getvoiece.chinese2katakana(content[0])
+        text_chjp = await getvoiece.chinese2katakana(content[0])
         A = getvoiece.getvoice()
     elif content[0].isdigit():
-        text_chjp = getvoiece.chinese2katakana(content[1])
+        text_chjp = await getvoiece.chinese2katakana(content[1])
         A = getvoiece.getvoice(int(content[0]))
     else:
         await bot.send(ev, sv_help)
         return
-    A.gethash(text_chjp)
-    A.getvoice(path_wav)
+    await A.gethash(text_chjp)
+    await A.getvoice(path_wav)
     final_send = MessageSegment.record(f'file:///{os.path.abspath(voice_send.path)}')
     await bot.send(ev, final_send)
 
@@ -56,17 +57,17 @@ async def youzi_voice_ja(bot, ev):
     voice_send = R.get('record', 'demo.wav') 
     path_wav = os.path.abspath(voice_send.path)
     if len(content) == 1:
-        text_chjp = getvoiece.chinese2japanese(content[0])
+        text_chjp = await translate(content[0])
         A = getvoiece.getvoice()
     elif content[0].isdigit():
-        text_chjp = getvoiece.chinese2japanese((content[1]))
+        text_chjp = await translate(content[1])
         A = getvoiece.getvoice(int(content[0]))
     else:
         await bot.send(ev, sv_help)
         return
     await bot.send(ev, text_chjp)
-    A.gethash(text_chjp)
-    A.getvoice(path_wav)
+    await A.gethash(text_chjp)
+    await A.getvoice(path_wav)
     final_send = MessageSegment.record(f'file:///{os.path.abspath(voice_send.path)}')
     await bot.send(ev, final_send)
 

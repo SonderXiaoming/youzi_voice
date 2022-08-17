@@ -1,13 +1,15 @@
 import random
 import requests
+import asyncio
 from lxml import etree
 import base64
+import aiohttp
+import wave
 import json
-import re
 
 speaker_list = ["綾地寧々","因幡めぐる","朝武芳乃","常陸茉子","ムラサメ","鞍馬小春","在原七海"]
 
-def local_hash():
+async def local_hash():
     alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
     a = ""
     for it in range(10):
@@ -15,9 +17,9 @@ def local_hash():
         a = a+char
     return a
 
-def chinese2katakana(text):
+async def chinese2katakana(text):
     #text = parse.quote(text)
-    print(text)
+    #print(text)
     cookies = {
         '__gads': 'ID=0913d7b7838088a9-22d4a86186d500c8:T=1660228904:RT=1660228904:S=ALNI_MYLAxIRws8hObfvoeF5wkg6F8_1qg',
         '__gpi': 'UID=00000880c2f1ffa9:T=1660228904:RT=1660228904:S=ALNI_ManV7rXnEUgMAuUxsLEFkSYonxQRQ',
@@ -53,7 +55,6 @@ def chinese2katakana(text):
         'optionext': 'zenkaku',
     }
 
-
     response = requests.post('https://www.ltool.net/chinese-simplified-and-traditional-characters-pinyin-to-katakana-converter-in-simplified-chinese.php', cookies=cookies, headers=headers, data=data)
     #print(response.text)
     html = etree.HTML(response.text)
@@ -62,38 +63,6 @@ def chinese2katakana(text):
     for it in text:
         text_full = text_full + it
     return text_full
-
-def chinese2japanese(text,language='ja'):
-    
-    url = 'https://translate.google.cn/_/TranslateWebserverUi/data/batchexecute?rpcids=MkEWBc&f.sid=-2984828793698248690&bl=boq_translate-webserver_20201221.17_p0&hl=zh-CN&soc-app=1&soc-platform=1&soc-device=1&_reqid=5445720&rt=c'
-    headers = {
-	    'origin': 'https://translate.google.cn',
-	    'referer': 'https://translate.google.cn/',
-	    'sec-fetch-dest': 'empty',
-	    'sec-fetch-mode': 'cors',
-	    'sec-fetch-site': 'same-origin',
-	    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36',
-	    'x-client-data': 'CIW2yQEIpbbJAQjEtskBCKmdygEIrMfKAQj2x8oBCPfHygEItMvKAQihz8oBCNzVygEIi5nLAQjBnMsB',
-	    'Decoded':'message ClientVariations {repeated int32 variation_id = [3300101, 3300133, 3300164, 3313321, 3318700, 3318774, 3318775, 3319220, 3319713, 3320540, 3329163, 3329601];}',
-	    'x-same-domain': '1'
-	    }  
-    data = {
-        	'f.req': f'[[["MkEWBc","[[\\"{text}\\",\\"auto\\",\\"{language}\\",true],[null]]",null,"generic"]]]'
-    	}  
-    
-    res = requests.post(url, headers=headers, data=data).text
-    pattern = '\)\]\}\'\s*\d{3,4}\s*\[(.*)\s*' 
-    part1 = re.findall(pattern, res)
-    part1_list = json.loads('['+part1[0])[0]
-    if part1_list[2] is None:  
-        return text
-    content1 = part1_list[2].replace('\n', '')
-    part2_list = json.loads(content1)[1][0][0][5:][0]
-    s = ''
-    for i in part2_list:  
-        s += i[0]
-        # s += i[1][1] 
-    return s
 
 class getvoice(object):
     def __init__(self,speaker_id=0) :
@@ -116,7 +85,8 @@ class getvoice(object):
         self.speaker = speaker_list[speaker_id]
         self.hash = local_hash()
         
-    def gethash(self,text):
+    async def gethash(self,text):
+        self.text = text
         self.json_data = {
             'fn_index': 0,
             'data': [
@@ -126,25 +96,69 @@ class getvoice(object):
             'action': 'predict',
             'session_hash': f'{self.hash}',
         }
-
-        response = requests.post('https://hf.space/embed/skytnt/moe-japanese-tts/api/queue/push/', headers=self.headers, json=self.json_data)
-        self.voicehash = response.json().get("hash")
-        print(self.voicehash)
+        async with aiohttp.ClientSession() as session: 
+            async with session.post('https://hf.space/embed/skytnt/moe-japanese-tts/api/queue/push/', headers=self.headers, json=self.json_data) as resp:
+                #self.voicehash = await resp.json()["hash"]
+                a = await resp.json()
+                self.voicehash = a.get("hash")
+        #print(self.voicehash)
         
-    def getvoice(self,path):
+    async def getvoice(self,path):
         self.path = path
         self.json_data_2 = {
             'hash': f'{self.voicehash}',
         }
-        self.json_data_2 = str(self.json_data_2)
-        self.json_data_2 = self.json_data_2.replace("'",'"').replace(" ","")
-        self.json_data_2 = self.json_data_2.encode()
-        response = requests.post('https://hf.space/embed/skytnt/moe-japanese-tts/api/queue/status/', headers=self.headers, data=self.json_data_2)
-        a = response.json()
+        
+        async with aiohttp.ClientSession() as session: 
+            async with session.post('https://hf.space/embed/skytnt/moe-japanese-tts/api/queue/status/', headers=self.headers,json=self.json_data_2) as resp:
+                a =await resp.json()
+                #print(a)  #######注释
         if a.get('status') == 'PENDING' or a.get('status') == 'QUEUED':
-            getvoice.getvoice(self,self.path)
+            await getvoice.getvoice(self,self.path)
+            return
+        if a.get("data").get("data")[1] == None :
+            print(114514)  ######
+            await getvoice.mixit(self,self.text)
             return
         voice_base64 = a.get("data").get("data")[1].split(",")[1]
         voice_b = base64.b64decode(voice_base64)
         with open(f"{path}","wb") as f:
             f.write(voice_b)
+            
+    async def mixit(self,text): #长度过长则混合合成
+        gap = int(len(text)/2)
+        text1 = text[:gap]
+        text2 = text[gap:]
+        path1 = self.path
+        path2 = self.path+"1.wav"
+        await getvoice.gethash(self,text1)
+        await getvoice.getvoice(self,path1)
+        await getvoice.gethash(self,text2)
+        await getvoice.getvoice(self,path2)
+        #########语言合成开始##########
+        infiles = [path1, path2]
+        outfile = path1
+        data= []
+        for infile in infiles:
+            w = wave.open(infile, 'rb')
+            data.append( [w.getparams(), w.readframes(w.getnframes())] )
+            w.close()
+        output = wave.open(outfile, 'wb')
+        output.setparams(data[0][0])
+        output.writeframes(data[0][1])
+        output.writeframes(data[1][1])
+        output.close()
+            
+        
+        
+        
+        
+if __name__ == "__main__":
+    text = "车子千万不要外借！我真是吃了大亏了！朋友找我借车，碍于面子不好意思不借，结果昨天在路上遇见了，一点都不爱惜我的车，上坡还站起来蹬车，链子都掉了！气死我了！幸好今天是肯德基疯狂星期四，有人请我吃我感觉会好点"
+    path = "demo.wav"
+    text_chjp = asyncio.run(chinese2katakana(text))
+    print(text_chjp)
+    A = getvoice()
+    A.gethash(text_chjp)
+    A.getvoice(path)
+    
