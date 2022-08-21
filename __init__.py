@@ -21,6 +21,10 @@ speaker_id = '''
 6；在原七海
 '''.strip()
 
+path = os.path.abspath(R.get('record').path)
+if not os.path.exists(path):
+    os.makedirs(path)#校验文件
+
 sv = Service(
     name='JapaneseTTS',  # 功能名
     use_priv=priv.NORMAL,  # 使用权限
