@@ -7,7 +7,7 @@ import aiohttp
 import wave
 import json
 
-speaker_list = ["綾地寧々","因幡めぐる","朝武芳乃","常陸茉子","ムラサメ","鞍馬小春","在原七海"]
+speaker_list = ["model0/綾地寧々","model0/因幡めぐる","model0/朝武芳乃","model0/常陸茉子","model0/ムラサメ","model0/鞍馬小春","model0/在原七海"]
 
 async def local_hash():
     alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
