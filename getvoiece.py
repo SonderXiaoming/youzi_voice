@@ -85,6 +85,7 @@ class getvoice(object):
             'data': [
                 f'{text}',
                 f'{self.speaker}',
+                1,
             ],
             'action': 'predict',
             'session_hash': f'{self.hash}',
