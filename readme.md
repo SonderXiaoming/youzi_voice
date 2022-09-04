@@ -1,6 +1,6 @@
 # 柚子社角色配音
 
-#不可用，当前网站好像加强了反爬，已经超过我的反反爬水平了，等待大佬救救。网站地址https://huggingface.co/spaces/skytnt/moe-tts
+# 不可用，当前网站好像加强了反爬，已经超过我的反反爬水平了，等待大佬救救。网站地址https://huggingface.co/spaces/skytnt/moe-tts
 
 一个适用于HoshinoBot的模仿柚子社角色配音插件
 
