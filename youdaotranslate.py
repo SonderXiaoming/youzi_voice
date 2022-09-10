@@ -3,8 +3,13 @@ import time
 import random
 import hashlib
 import json
+import re
+
+jap = re.compile(r'[\u3040-\u309F\u30A0-\u30FF]') 
 
 async def translate(text):
+  if jap.search(text):
+    return text #日语不翻译
   lts = str(int(time.time()*1000))
   salt = lts + str(random.randint(0,9))
   sign_str = 'fanyideskweb' + text + salt + 'Ygy_4c=r#e#4EX^NUGUc5'

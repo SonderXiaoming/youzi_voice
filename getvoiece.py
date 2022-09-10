@@ -1,18 +1,12 @@
-import random
-import requests
-import asyncio
+import json
+from aiowebsocket.converses import AioWebSocket
 from lxml import etree
 import base64
 import aiohttp
-import wave
+from typing import Union
 
-async def local_hash():
-    alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
-    a = ""
-    for it in range(10):
-        char = random.choice(alphabet)
-        a = a+char
-    return a
+GenshinAPI = 'http://233366.proxy.nscc-gz.cn:8888'
+XcwAPI = 'http://prts.tencentbot.top/0/'
 
 async def chinese2katakana(text):
     cookies = {
@@ -49,93 +43,59 @@ async def chinese2katakana(text):
         'option': '1',
         'optionext': 'zenkaku',
     }
-
-    response = requests.post('https://www.ltool.net/chinese-simplified-and-traditional-characters-pinyin-to-katakana-converter-in-simplified-chinese.php', cookies=cookies, headers=headers, data=data)
-    html = etree.HTML(response.text)
+    async with aiohttp.ClientSession() as session: 
+        async with session.post('https://www.ltool.net/chinese-simplified-and-traditional-characters-pinyin-to-katakana-converter-in-simplified-chinese.php', headers=headers, data=data, cookies=cookies) as resp:
+            a = await resp.text()
+    html = etree.HTML(a)
     text = html.xpath("/html//form/div[5]/div/text()")
     text_full = ""
     for it in text:
         text_full = text_full + it
+    print(text_full)
     return text_full
 
 class getvoice(object):
     def __init__(self,speaker,num) :
-        self.headers = {
-            'authority': 'hf.space',
-            'accept': '*/*',
-            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-            'origin': 'https://hf.space',
-            'referer': 'https://hf.space/embed/skytnt/moe-japanese-tts/+?__theme=light',
-            'sec-ch-ua': '"Chromium";v="104", " Not A;Brand";v="99", "Microsoft Edge";v="104"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.47',
-        }
         self.speaker = speaker
         self.num = num
-        self.hash = local_hash()
+        self.count = 0
         
     async def gethash(self,text):
-        self.text = text
-        self.json_data = {
-            'fn_index': self.num,
-            'data': [
-                f'{text}',
-                f'{self.speaker}',
-                1,
-            ],
-            'action': 'predict',
-            'session_hash': f'{self.hash}',
-        }
+        uri = 'wss://spaces.huggingface.tech/skytnt/moe-tts/queue/join'
+        async with AioWebSocket(uri) as aws:
+            converse = aws.manipulator
+            while True:
+                receive = await converse.receive()
+                print(receive.decode())
+                a = json.loads(receive.decode())
+                if a["msg"] == "send_data":
+                    if self.count == 0:
+                        message = {"fn_index":self.num,"data":[text,self.speaker,1,False]}
+                        message = str(message)
+                        message = message.replace(" ","")
+                        message = message.replace("'",'"')
+                        message = message.replace("False",'false')
+                        print(message)
+                        await converse.send(message)
+                    self.count = 1
+                if a["msg"] == "process_completed":
+                    self.count = 0
+                    self.voicehash = a["output"]["data"][1]["name"]
+                    break
         async with aiohttp.ClientSession() as session: 
-            async with session.post('https://hf.space/embed/skytnt/moe-japanese-tts/api/queue/push/', headers=self.headers, json=self.json_data) as resp:
-                a = await resp.json()
-                self.voicehash = a.get("hash")
-        
-    async def getvoice(self,path):
-        self.path = path
-        self.json_data_2 = {
-            'hash': f'{self.voicehash}',
-        }
+            async with session.get(f'https://hf.space/embed/skytnt/moe-tts/file={self.voicehash}') as resp:
+                a = await resp.content.read()
+        return 'base64://' + base64.b64encode(a).decode()
 
-        async with aiohttp.ClientSession() as session: 
-            async with session.post('https://hf.space/embed/skytnt/moe-japanese-tts/api/queue/status/', headers=self.headers,json=self.json_data_2) as resp:
-                a =await resp.json()
-        if a.get('status') == 'PENDING' or a.get('status') == 'QUEUED':
-            await getvoice.getvoice(self,self.path)
-            return
-        if a.get("data").get("data")[1] == None :
-            await getvoice.mixit(self,self.text)
-            return
-        voice_base64 = a.get("data").get("data")[1].split(",")[1]
-        voice_b = base64.b64decode(voice_base64)
-        with open(f"{path}","wb") as f:
-            f.write(voice_b)
-            
-    async def mixit(self,text): #长度过长则混合合成
-        gap = int(len(text)/2)
-        text1 = text[:gap]
-        text2 = text[gap:]
-        path1 = self.path
-        path2 = self.path+"1.wav"
-        await getvoice.gethash(self,text1)
-        await getvoice.getvoice(self,path1)
-        await getvoice.gethash(self,text2)
-        await getvoice.getvoice(self,path2)
-        #########语言合成开始##########
-        infiles = [path1, path2]
-        outfile = path1
-        data= []
-        for infile in infiles:
-            w = wave.open(infile, 'rb')
-            data.append( [w.getparams(), w.readframes(w.getnframes())] )
-            w.close()
-        output = wave.open(outfile, 'wb')
-        output.setparams(data[0][0])
-        output.writeframes(data[0][1])
-        output.writeframes(data[1][1])
-        output.close()
-    
+async def voiceApi(api: str, params: Union[str, dict] = None) -> str:
+    async with aiohttp.request('GET', api, params=params) as resp:
+        if resp.status == 200:
+            data = await resp.read()
+        else:
+            raise Error(resp.status)
+    return 'base64://' + base64.b64encode(data).decode()
+
+class Error(Exception):
+    def __init__(self, args: object) -> None:
+        self.error = args
+
