@@ -154,7 +154,7 @@ async def voice(bot, ev):
             return
         preid: str = ev.prefix[:-3]
         prelang: str = ev.prefix[-2:]
-        if prelang == '中文':
+        if prelang == '中配':
             if preid in XCW:
                 text = await chinese2katakana(text)
                 voice = await voiceApi(XcwAPI + text)
