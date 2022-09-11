@@ -152,7 +152,7 @@ async def voice(bot, ev):
         if not text:
             await bot.send(ev, '请输入需要合成语音的文本', at_sender=True)
             return
-        preid: str = ev.prefix[:-3]
+        preid: str = ev.prefix[:-2]
         prelang: str = ev.prefix[-2:]
         if prelang == '中配':
             if preid in XCW:
