@@ -49,7 +49,7 @@ def line_break(line):
 def image_draw(msg):
     global LINE_CHAR_COUNT_MAX
     output_str = line_break(msg)
-    d_font = ImageFont.truetype('./simhei.ttf', CHAR_SIZE)
+    d_font = ImageFont.truetype('./SIMYOU.ttf', CHAR_SIZE)
     lines = output_str.count('\n')  # 计算行数
 
     image = Image.new(mode= "RGB", size= (LINE_CHAR_COUNT_MAX*CHAR_SIZE // 2+84, CHAR_SIZE_h*lines+84), color=(255,252,245))
