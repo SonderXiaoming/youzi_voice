@@ -35,7 +35,7 @@ genshin = ['派蒙', '凯亚', '安柏', '丽莎', '琴', '香菱', '枫原万�
            '班尼特', '申鹤', '行秋', '烟绯', '久岐忍', '辛焱', '砂糖', '胡桃', '重云', '菲谢尔', '诺艾尔', '迪奥娜', '鹿野院平藏']
 
 speaker_id = '''
-类别:--柚子===========常轨脱离=======缘之空=========
+类别:==柚子===========常轨脱离=======缘之空=========
 id: 0： 绫地宁宁   |0：和泉妃爱   |0：春日野穹     
     1： 因幡爱瑠   |1：常磐华乃   |1：天女目瑛    
     2： 朝武芳乃   |2：锦亚澄     |2：依媛奈绪    
@@ -182,7 +182,7 @@ async def speaker_list(bot, ev):
     await bot.send(ev, f'[CQ:image,file={img}]')
 
    
-@sv.on_suffix(('语言帮助','语音帮助'))
+@sv.on_suffix(('语音帮助','配音帮助','配音','语音'))
 async def voicehelp(bot, ev):
     image = Image.open(os.path.join(os.path.dirname(__file__),f"help.jpg"))
     draw= ImageDraw.Draw(image) #建立一个绘图的对象
@@ -205,10 +205,10 @@ async def voicehelp(bot, ev):
               text=''
               text+=prime+" "
     textcn+=text+'\n'    
-    draw.text((84,827), text1, font=font, fill="gray") 
-    draw.text((84,2080), textxcw, font=font2, fill="black")
-    draw.text((84,2120), text2, font=font2, fill="black")
-    draw.text((84,2160), textcn, font=font, fill="gray") 
+    draw.text((84,827), text1, font=font, fill="#2e59a7") 
+    draw.text((84,2080), textxcw, font=font2, fill="#531dab")
+    draw.text((84,2120), text2, font=font2, fill="#531dab")
+    draw.text((84,2160), textcn, font=font, fill="#2e59a7") 
     image.save(os.path.join(os.path.dirname(__file__),f"help2.jpg"))
     help2=os.path.join(os.path.dirname(__file__),f"help2.jpg")
     await bot.send(ev, MessageSegment.image(f'file:///{help2}'))
