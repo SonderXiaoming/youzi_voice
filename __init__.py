@@ -182,7 +182,7 @@ async def speaker_list(bot, ev):
     await bot.send(ev, f'[CQ:image,file={img}]')
 
    
-@sv.on_rex(r'(语音|配音)帮助?')
+@sv.on_rex(r'^(语音|配音)(帮助)?$')
 async def voicehelp(bot, ev):
     image = Image.open(os.path.join(os.path.dirname(__file__),f"help.jpg"))
     draw= ImageDraw.Draw(image) #建立一个绘图的对象
