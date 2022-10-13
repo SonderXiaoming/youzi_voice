@@ -4,6 +4,7 @@ from lxml import etree
 import base64
 import aiohttp
 from typing import Union
+import random
 
 GenshinAPI = 'http://233366.proxy.nscc-gz.cn:8888'
 XcwAPI = 'http://prts.tencentbot.top/0/'
