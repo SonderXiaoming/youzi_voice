@@ -4,9 +4,18 @@ from lxml import etree
 import base64
 import aiohttp
 from typing import Union
+import random
 
 GenshinAPI = 'http://233366.proxy.nscc-gz.cn:8888'
 XcwAPI = 'http://prts.tencentbot.top/0/'
+
+def local_hash():
+    alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
+    a = ""
+    for it in range(10):
+        char = random.choice(alphabet)
+        a = a+char
+    return a
 
 async def chinese2katakana(text):
     cookies = {
@@ -70,7 +79,7 @@ class getvoice(object):
                 a = json.loads(receive.decode())
                 if a["msg"] == "send_data":
                     if self.count == 0:
-                        message = {"fn_index":self.num,"data":[text,self.speaker,1,False]}
+                        message = {"fn_index":self.num,"data":[text,self.speaker,1,False],"session_hash":local_hash()}
                         message = str(message)
                         message = message.replace(" ","")
                         message = message.replace("'",'"')
