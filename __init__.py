@@ -79,7 +79,7 @@ def get_speakers(choose, num=0):
         if num >= 7:
             model = 9
         else:
-            model = 1
+            model = 0
     return speakers, model
 
 
