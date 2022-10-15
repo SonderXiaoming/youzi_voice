@@ -5,6 +5,9 @@ import base64
 import aiohttp
 from typing import Union
 import random
+import asyncio
+import io
+import wave
 
 GenshinAPI = 'http://233366.proxy.nscc-gz.cn:8888'
 XcwAPI = 'http://prts.tencentbot.top/0/'
@@ -70,6 +73,32 @@ class getvoice(object):
         self.count = 0
         
     async def gethash(self,text):
+        if len(text) < 61 :
+            result = await self.gethash2(text)
+            return result
+        else:
+            round = int(len(text)/60)
+            IO_list = []
+            output_IO = io.BytesIO()
+            for it in range(round+1):
+                text2 = text[it*60:(it+1)*60]
+                await self.gethash2(text2)
+                IO_list += [self.b_io]
+            count = range(len(IO_list))
+            data = []
+            for it in count:
+                w = wave.open(IO_list[it], 'rb')
+                data.append([w.getparams(), w.readframes(w.getnframes())])
+                w.close()
+            output = wave.open(output_IO, 'wb')
+            output.setparams(data[0][0])
+            for it in count:
+                output.writeframes(data[it][1])
+            output.close()   
+            base64_str = 'base64://' + base64.b64encode(output_IO.getvalue()).decode()
+            return base64_str
+
+    async def gethash2(self,text):
         uri = 'wss://spaces.huggingface.tech/skytnt/moe-tts/queue/join'
         async with AioWebSocket(uri) as aws:
             converse = aws.manipulator
@@ -94,6 +123,7 @@ class getvoice(object):
         async with aiohttp.ClientSession() as session: 
             async with session.get(f'https://hf.space/embed/skytnt/moe-tts/file={self.voicehash}') as resp:
                 a = await resp.content.read()
+                self.b_io = io.BytesIO(a)
         return 'base64://' + base64.b64encode(a).decode()
 
 async def voiceApi(api: str, params: Union[str, dict] = None) -> str:
