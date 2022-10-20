@@ -1,13 +1,12 @@
-import json
-from aiowebsocket.converses import AioWebSocket
-from lxml import etree
-import base64
-import aiohttp
-from typing import Union
-import random
-import asyncio
 import io
+import json
 import wave
+import base64
+import random
+import aiohttp
+from lxml import etree
+from typing import Union
+from aiowebsocket.converses import AioWebSocket
 
 GenshinAPI = 'http://233366.proxy.nscc-gz.cn:8888'
 XcwAPI = 'http://prts.tencentbot.top/0/'
@@ -63,7 +62,7 @@ async def chinese2katakana(text):
     text_full = ""
     for it in text:
         text_full = text_full + it
-    print(text_full)
+    #print(text_full)
     return text_full
 
 class getvoice(object):
@@ -104,7 +103,7 @@ class getvoice(object):
             converse = aws.manipulator
             while True:
                 receive = await converse.receive()
-                print(receive.decode())
+                #print(receive.decode())
                 a = json.loads(receive.decode())
                 if a["msg"] == "send_data":
                     if self.count == 0:
@@ -113,7 +112,7 @@ class getvoice(object):
                         message = message.replace(" ","")
                         message = message.replace("'",'"')
                         message = message.replace("False",'false')
-                        print(message)
+                        #print(message)
                         await converse.send(message)
                     self.count = 1
                 if a["msg"] == "process_completed":
