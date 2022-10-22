@@ -236,7 +236,7 @@ async def speaker_list(bot, ev):
 async def voicehelp(bot, ev):
     image = Image.open(os.path.join(os.path.dirname(__file__),f"help.jpg"))
     draw= ImageDraw.Draw(image) #建立一个绘图的对象
-    font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),f"SIMYOU.ttf"), 40)
+    font = ImageFont.truetype(os.path.join(os.path.dirname(__file__),f"SIMYOU.ttf"), 35)
     font2 = ImageFont.truetype(os.path.join(os.path.dirname(__file__),f"SIMYOU.ttf"), 30)
     text1=speaker_id                     
     text=''
@@ -256,9 +256,9 @@ async def voicehelp(bot, ev):
               text+=prime+" "
     textcn+=text+'\n'    
     draw.text((84,827), text1, font=font, fill="#2e59a7") 
-    draw.text((84,2080), textxcw, font=font2, fill="#531dab")
-    draw.text((84,2120), text2, font=font2, fill="#531dab")
-    draw.text((84,2160), textcn, font=font, fill="#2e59a7") 
+    draw.text((84,2880), textxcw, font=font2, fill="#531dab")
+    draw.text((84,2920), text2, font=font2, fill="#531dab")
+    draw.text((84,2960), textcn, font=font, fill="#2e59a7") 
     image.save(os.path.join(os.path.dirname(__file__),f"help2.jpg"))
     help2=os.path.join(os.path.dirname(__file__),f"help2.jpg")
     await bot.send(ev, MessageSegment.image(f'file:///{help2}'))
