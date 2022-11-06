@@ -1,12 +1,13 @@
-import io
 import json
-import wave
-import base64
-import random
-import aiohttp
-from lxml import etree
-from typing import Union
 from aiowebsocket.converses import AioWebSocket
+from lxml import etree
+import base64
+import aiohttp
+from typing import Union
+import random
+import asyncio
+import io
+import wave
 
 GenshinAPI = 'http://233366.proxy.nscc-gz.cn:8888'
 XcwAPI = 'http://prts.tencentbot.top/0/'
@@ -62,13 +63,14 @@ async def chinese2katakana(text):
     text_full = ""
     for it in text:
         text_full = text_full + it
-    #print(text_full)
+    print(text_full)
     return text_full
 
 class getvoice(object):
     def __init__(self,speaker,num) :
         self.speaker = speaker
         self.num = num
+        self.count_hash = 0
         self.count = 0
         
     async def gethash(self,text):
@@ -98,25 +100,37 @@ class getvoice(object):
             return base64_str
 
     async def gethash2(self,text):
-        uri = 'wss://spaces.huggingface.tech/skytnt/moe-tts/queue/join'
+        temphash = local_hash()
+        uri = 'wss://skytnt-moe-tts.hf.space/queue/join'
         async with AioWebSocket(uri) as aws:
             converse = aws.manipulator
             while True:
                 receive = await converse.receive()
-                #print(receive.decode())
+                print(receive)
                 a = json.loads(receive.decode())
+                if a["msg"] == "send_hash":
+                    if self.count_hash == 0:
+                        message = {"session_hash":temphash,"fn_index":0}
+                        message = str(message)
+                        message = message.replace(" ","")
+                        message = message.replace("'",'"')
+                        message = message.replace("False",'false')                        
+                        print(message)
+                        await converse.send(message)
+                    self.count_hash = 1
                 if a["msg"] == "send_data":
                     if self.count == 0:
-                        message = {"fn_index":self.num,"data":[text,self.speaker,1,False],"session_hash":local_hash()}
+                        message = {"fn_index":self.num,"data":[text,self.speaker,1,False],"session_hash":temphash}
                         message = str(message)
                         message = message.replace(" ","")
                         message = message.replace("'",'"')
                         message = message.replace("False",'false')
-                        #print(message)
+                        print(message)
                         await converse.send(message)
                     self.count = 1
                 if a["msg"] == "process_completed":
                     self.count = 0
+                    self.count_hash = 0
                     self.voicehash = a["output"]["data"][1]["name"]
                     break
         async with aiohttp.ClientSession() as session: 
@@ -137,3 +151,8 @@ class Error(Exception):
     def __init__(self, args: object) -> None:
         self.error = args
 
+if __name__ == "__main__":
+    A = getvoice("綾地寧々",0)
+    loop = asyncio.get_event_loop()
+    result = loop.run_until_complete(A.gethash("こんにちは。"))
+    print(result)
