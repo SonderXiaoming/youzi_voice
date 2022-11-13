@@ -111,25 +111,25 @@ id: 0： 鹰仓杏璃    《Clover Day's》
 
 def get_speakers(choose, num=0):
     if choose == '常轨脱离':
-        speakers, model = speaker_dict["常轨脱离"][num], 3
+        speakers, model = speaker_dict["常轨脱离"][num], 5
     elif choose == '缘之空':
-        speakers, model = speaker_dict["缘之空"][num], 9
+        speakers, model = speaker_dict["缘之空"][num], 13
     elif choose == '美少女万華鏡':
-        speakers, model = speaker_dict["美少女万華鏡"][num], 12
+        speakers, model = speaker_dict["美少女万華鏡"][num], 17
     elif choose == "galgame":
-        speakers, model = speaker_dict["galgame"][num], 21
+        speakers, model = speaker_dict["galgame"][num], 29
     elif choose == "零之使魔":
-        speakers, model = speaker_dict["零之使魔"][num], 24
+        speakers, model = speaker_dict["零之使魔"][num], 33
     elif choose == "TOLOVE":
-        speakers, model = speaker_dict["TOLOVE"][num], 30
+        speakers, model = speaker_dict["TOLOVE"][num], 41
     else:
         speakers = speaker_dict["柚子"][num]
         if num >= 12:
-            model = 27
+            model = 31
         elif num >= 7:
-            model = 6
+            model = 9
         else:
-            model = 0
+            model = 1
     return speakers, model
 
 
@@ -188,12 +188,9 @@ async def youzi_voice_ja(bot, ev):
         await bot.send(ev, sv_help)
         return
     await bot.send(ev, text_chjp)
-    try:
-        voice = await A.gethash(text_chjp)
-        final_send = MessageSegment.record(voice)
-        await bot.send(ev, final_send)
-    except:
-        await bot.send(ev, "生成失败，红豆泥斯密马赛~")
+    voice = await A.gethash(text_chjp)
+    final_send = MessageSegment.record(voice)
+    await bot.send(ev, final_send)
 
 @sv.on_prefix(['#'+i + '日配' for i in XCW])
 @sv.on_prefix(['#'+i + '中配' for i in genshin])

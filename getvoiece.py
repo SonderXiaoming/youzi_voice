@@ -63,7 +63,7 @@ async def chinese2katakana(text):
     text_full = ""
     for it in text:
         text_full = text_full + it
-    print(text_full)
+    #print(text_full)
     return text_full
 
 class getvoice(object):
@@ -106,7 +106,7 @@ class getvoice(object):
             converse = aws.manipulator
             while True:
                 receive = await converse.receive()
-                print(receive)
+                #print(receive)
                 a = json.loads(receive.decode())
                 if a["msg"] == "send_hash":
                     if self.count_hash == 0:
@@ -115,7 +115,7 @@ class getvoice(object):
                         message = message.replace(" ","")
                         message = message.replace("'",'"')
                         message = message.replace("False",'false')                        
-                        print(message)
+                        #print(message)
                         await converse.send(message)
                     self.count_hash = 1
                 if a["msg"] == "send_data":
@@ -125,19 +125,15 @@ class getvoice(object):
                         message = message.replace(" ","")
                         message = message.replace("'",'"')
                         message = message.replace("False",'false')
-                        print(message)
+                        #print(message)
                         await converse.send(message)
                     self.count = 1
                 if a["msg"] == "process_completed":
                     self.count = 0
                     self.count_hash = 0
-                    self.voicehash = a["output"]["data"][1]["name"]
+                    self.voicehash = a["output"]["data"][1]
                     break
-        async with aiohttp.ClientSession() as session: 
-            async with session.get(f'https://hf.space/embed/skytnt/moe-tts/file={self.voicehash}') as resp:
-                a = await resp.content.read()
-                self.b_io = io.BytesIO(a)
-        return 'base64://' + base64.b64encode(a).decode()
+        return 'base64://' + self.voicehash[len("data:audio/wav;base64,"):]
 
 async def voiceApi(api: str, params: Union[str, dict] = None) -> str:
     async with aiohttp.request('GET', api, params=params) as resp:
@@ -152,7 +148,7 @@ class Error(Exception):
         self.error = args
 
 if __name__ == "__main__":
-    A = getvoice("綾地寧々",0)
+    A = getvoice("綾地寧々",1)
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(A.gethash("こんにちは。"))
     print(result)
