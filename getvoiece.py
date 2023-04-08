@@ -122,7 +122,7 @@ class getvoice(object):
                     if self.count == 0:
                         message = {"fn_index":self.num,"data":[text,self.speaker,1,False],"session_hash":temphash}
                         message = str(message)
-                        message = message.replace(" ","")
+                        #message = message.replace(" ","")
                         message = message.replace("'",'"')
                         message = message.replace("False",'false')
                         #print(message)
