@@ -318,14 +318,14 @@ async def youzi_voice_cn(bot, ev):
        content=[category[0]+'中配',category[1],content[-1]]
     if len(content) == 2:
         speaker, model = get_speakers(content[0][:-2])
-        if model == 65:
+        if content[0][:-2].strip() == "公主连结":
             text_chjp = f"[ZH]{content[1]}[ZH]"
         else:
             text_chjp = await chinese2katakana(content[1])
         A = getvoice(speaker, model)
     elif content[1].isdigit():
         speaker, model = get_speakers(content[0][:-2], int(content[1]))
-        if model == 65:
+        if content[0][:-2].strip() == "公主连结":
             text_chjp = f"[ZH]{content[1]}[ZH]"
         else:
             text_chjp = await chinese2katakana(content[1])
@@ -351,7 +351,7 @@ async def youzi_voice_ja(bot, ev):
     if len(content) == 2:
         speaker, model = get_speakers(content[0][:-2])
         text_chjp = await translate(content[1])
-        if model == 65:
+        if content[0][:-2].strip() == "公主连结":
             text_chjp = f"[JA]{text_chjp}[JA]"
         A = getvoice(speaker, model)
     elif content[1].isdigit():
