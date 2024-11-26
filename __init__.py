@@ -2,7 +2,7 @@ from hoshino import Service, priv
 from nonebot import MessageSegment
 from .create_img import image_draw
 from .youdaotranslate import translate
-from .getvoiece import voiceApi, GenshinAPI, XcwAPI, Error, chinese2katakana, getvoice
+from .getvoiece import chinese2katakana, MOETTSVoice
 from PIL import Image, ImageDraw, ImageFont
 import os
 
@@ -33,7 +33,8 @@ speaker_dict = {
         "明月栞那",
         "墨染希",
         "火打谷愛衣",
-        "汐山涼音" "矢来美羽",
+        "汐山涼音",
+        "矢来美羽",
         "布良梓",
         "エリナ",
         "稲村莉音",
@@ -46,7 +47,16 @@ speaker_dict = {
         "枡形兵馬",
         "扇元樹",
     ],
-    "常轨脱离": ["和泉妃愛", "常盤華乃", "錦あすみ", "鎌倉詩桜", "竜閑天梨", "和泉里", "新川広夢", "聖莉々子"],
+    "常轨脱离": [
+        "和泉妃愛",
+        "常盤華乃",
+        "錦あすみ",
+        "鎌倉詩桜",
+        "竜閑天梨",
+        "和泉里",
+        "新川広夢",
+        "聖莉々子",
+    ],
     "缘之空": ["春日野穹", "天女目瑛", "依媛奈緒", "渚一葉"],
     "美少女万華鏡": ["蓮華", "篝ノ霧枝", "沢渡雫", "亜璃子", "灯露椎", "覡夕莉"],
     "galgame": [
@@ -403,61 +413,6 @@ speaker_dict = {
     ],
 }
 
-XCW = ["xcw", "小仓唯", "镜华"]
-
-genshin = [
-    "派蒙",
-    "凯亚",
-    "安柏",
-    "丽莎",
-    "琴",
-    "香菱",
-    "枫原万叶",
-    "迪卢克",
-    "温迪",
-    "可莉",
-    "早柚",
-    "托马",
-    "芭芭拉",
-    "优菈",
-    "云堇",
-    "钟离",
-    "魈",
-    "凝光",
-    "雷电将军",
-    "北斗",
-    "甘雨",
-    "七七",
-    "刻晴",
-    "神里绫华",
-    "雷泽",
-    "神里绫人",
-    "罗莎莉亚",
-    "阿贝多",
-    "八重神子",
-    "宵宫",
-    "荒泷一斗",
-    "九条裟罗",
-    "夜兰",
-    "珊瑚宫心海",
-    "五郎",
-    "达达利亚",
-    "莫娜",
-    "班尼特",
-    "申鹤",
-    "行秋",
-    "烟绯",
-    "久岐忍",
-    "辛焱",
-    "砂糖",
-    "胡桃",
-    "重云",
-    "菲谢尔",
-    "诺艾尔",
-    "迪奥娜",
-    "鹿野院平藏",
-]
-
 speaker_id = """
 类别:=====柚子=========零之使魔==========TOLOVE==========
 id: 0： 绫地宁宁   |0：露易丝          |0：金色暗影
@@ -543,82 +498,82 @@ id: 1：菈比莉斯塔（Overload） 2：铃奈（夏日）
     3：杏奈                  4：雪菲
     5：可可萝                6：菈比莉斯塔
     7：绫音（圣诞节）         8：碧（插班生）
-    9：嘉夜              10：镜华（万圣节）
-    11：珠希             12：望（夏日）
-    13：铃莓             14：真琴（夏日）
-    15：静流（情人节）    16：咲恋
-    17：莉玛             18：香澄（夏日）
-    19：千歌             20：忍
-    21：依里             22：佩可莉姆（新年）
-    23：胡桃             24：智（魔法少女）
-    25：优衣             26：怜（万圣节）
-    27：栞               28：香织（夏日）
-    29：祈梨（时间旅行）  30：咲恋（夏日）
-    31：铃奈             32：真步（夏日）
-    33：亚里莎            34：镜华
-    35：未奏希            36：伊莉亚（圣诞节）
-    37：美里              38：似似花
+    9：嘉夜                 10：镜华（万圣节）
+    11：珠希                12：望（夏日）
+    13：铃莓                14：真琴（夏日）
+    15：静流（情人节）       16：咲恋
+    17：莉玛                18：香澄（夏日）
+    19：千歌                20：忍
+    21：依里                22：佩可莉姆（新年）
+    23：胡桃                24：智（魔法少女）
+    25：优衣                26：怜（万圣节）
+    27：栞                  28：香织（夏日）
+    29：祈梨（时间旅行）     30：咲恋（夏日）
+    31：铃奈                32：真步（夏日）
+    33：亚里莎              34：镜华
+    35：未奏希              36：伊莉亚（圣诞节）
+    37：美里                38：似似花
     39：克莉丝提娜（圣诞节） 40：美冬（夏日）
-    41：莉玛（灰姑娘）     42：铃莓（夏日）
-    43：古蕾雅            44：美美（万圣节）
-    45：千歌（圣诞节）     46：碧
-    47：雪               48：惠理子（情人节）
-    49：伊绪             50：拉姆
-    51：七七香（夏日）    52：铃莓（新年）
-    53：铃（游骑兵）      54：环奈
-    55：惠理子           56：可可萝（礼服）
-    57：优衣（新年）      58：望（圣诞节）
-    59：可可萝（公主）    60：纯（夏日）
-    61：环奈（振袖）      62：咲恋（圣诞节）
-    63：露娜             64：香澄（魔法少女）
-    65：姬塔             66：矛依未（新年）
-    67：栞（魔法少女）    68：真步（灰姑娘）
-    69：怜（新年）       70：千歌（夏日）
-    71：祈梨             72：由加莉
+    41：莉玛（灰姑娘）       42：铃莓（夏日）
+    43：古蕾雅              44：美美（万圣节）
+    45：千歌（圣诞节）       46：碧
+    47：雪                  48：惠理子（情人节）
+    49：伊绪                50：拉姆
+    51：七七香（夏日）       52：铃莓（新年）
+    53：铃（游骑兵）         54：环奈
+    55：惠理子              56：可可萝（礼服）
+    57：优衣（新年）         58：望（圣诞节）
+    59：可可萝（公主）       60：纯（夏日）
+    61：环奈（振袖）         62：咲恋（圣诞节）
+    63：露娜                64：香澄（魔法少女）
+    65：姬塔                66：矛依未（新年）
+    67：栞（魔法少女）       68：真步（灰姑娘）
+    69：怜（新年）          70：千歌（夏日）
+    71：祈梨                72：由加莉
     73：佩可莉姆（夏日）     74：步美（仙境）
     75：可可萝（夏日）       76：绫音
     77：由加莉（圣诞节）     78：真阳
-    79：雷姆             80：茜里
-    81：铃               82：凛（偶像大师）
-    83：凯露             84：克罗依（圣学祭）
-    85：秋乃             86：克莉丝提娜
-    87：佩可莉姆          88：露
-    89：莫妮卡            90：璃乃
-    91：静流（夏日）       92：纺希（万圣节）
-    93：香澄              94：美咲
-    95：美里（夏日）       96：智
-    97：初音              98：璃乃（仙境）
-    99：卯月（偶像大师）   100：空花
-    101：珠希（夏日）      102：纯
-    103：美美             104：忍（万圣节）
-    105：妮侬（大江户）       106：千爱瑠
-    107：可可萝（新年）       108：怜（公主）
-    109：未奏希、美美、镜华    110：伊莉亚
-    111：望                   112：优衣（公主）
-    113：凯露（公主）          114：克罗依
-    115：秋乃（圣诞节）        116：优衣（礼服）
-    117：杏奈（夏日）          118：静流
-    119：未奏希（万圣节）      120：茜里（天使）
+    79：雷姆                80：茜里
+    81：铃                  82：凛（偶像大师）
+    83：凯露                84：克罗依（圣学祭）
+    85：秋乃                86：克莉丝提娜
+    87：佩可莉姆            88：露
+    89：莫妮卡              90：璃乃
+    91：静流（夏日）         92：纺希（万圣节）
+    93：香澄                94：美咲
+    95：美里（夏日）         96：智
+    97：初音                98：璃乃（仙境）
+    99：卯月（偶像大师）    100：空花
+    101：珠希（夏日）       102：纯
+    103：美美              104：忍（万圣节）
+    105：妮侬（大江户）     106：千爱瑠
+    107：可可萝（新年）     108：怜（公主）
+    109：未奏希、美美、镜华 110：伊莉亚
+    111：望                112：优衣（公主）
+    113：凯露（公主）       114：克罗依
+    115：秋乃（圣诞节）     116：优衣（礼服）
+    117：杏奈（夏日）       118：静流
+    119：未奏希（万圣节）    120：茜里（天使）
     121：宫子               122：日和莉（新年）
     123：优妮               124：安
     125：流夏（夏日）        126：美冬（工作服）
     127：美冬               128：初音（夏日）
     129：矛依未             130：凯露（夏日）
-    131：莫妮卡（魔法少女）     132：香织
-    133：宫子（万圣节）         134：美咲（万圣节）
-    135：妮侬                  136：怜
-    137：真阳（游骑兵）         138：碧（工作服）
-    139：日和莉                140：七七香
-    141：真琴                 142：步美
-    143：深月                 144：日和莉（公主）
-    145：伊绪（夏日）          146：茉莉
-    147：佩可莉姆（公主）      148：空花（大江户）
-    149：惠理子（夏日）        150：凯露（新年）
-    151：爱蜜莉雅              152：依里（天使）
-    153：茉莉（万圣节）        154：真琴（灰姑娘）
-    155：纺希                 156：真步
-    157：流夏                 158：似似花（新年）
-    159：未央（偶像大师）      160：胡桃（圣诞节）
+    131：莫妮卡（魔法少女）  132：香织
+    133：宫子（万圣节）      134：美咲（万圣节）
+    135：妮侬               136：怜
+    137：真阳（游骑兵）      138：碧（工作服）
+    139：日和莉             140：七七香
+    141：真琴               142：步美
+    143：深月               144：日和莉（公主）
+    145：伊绪（夏日）        146：茉莉
+    147：佩可莉姆（公主）    148：空花（大江户）
+    149：惠理子（夏日）      150：凯露（新年）
+    151：爱蜜莉雅            152：依里（天使）
+    153：茉莉（万圣节）      154：真琴（灰姑娘）
+    155：纺希               156：真步
+    157：流夏               158：似似花（新年）
+    159：未央（偶像大师）    160：胡桃（圣诞节）
 =========================魔法纪录=========================
 id: 1：环彩羽(Tamaki Iroha)           2：环忧(Tamaki Ui)
     3：七海八千代(Nanami Yachiyo)     4：十咎桃子(Togame Momoko)
@@ -636,32 +591,32 @@ id: 1：环彩羽(Tamaki Iroha)           2：环忧(Tamaki Ui)
 
 def get_speakers(choose, num=0):
     if choose == "常轨脱离":
-        speakers, model = speaker_dict["常轨脱离"][num], 5
+        speakers, model, trigger_id = speaker_dict["常轨脱离"][num], 3, 34
     elif choose == "缘之空":
-        speakers, model = speaker_dict["缘之空"][num], 13
+        speakers, model, trigger_id = speaker_dict["缘之空"][num], 9, 68
     elif choose == "美少女万華鏡":
-        speakers, model = speaker_dict["美少女万華鏡"][num], 17
+        speakers, model, trigger_id = speaker_dict["美少女万華鏡"][num], 12, 85
     elif choose == "galgame":
-        speakers, model = speaker_dict["galgame"][num], 29
+        speakers, model, trigger_id = speaker_dict["galgame"][num], 21, 136
     elif choose == "零之使魔":
-        speakers, model = speaker_dict["零之使魔"][num], 33
+        speakers, model, trigger_id = speaker_dict["零之使魔"][num], 24, 153
     elif choose == "TOLOVE":
-        speakers, model = speaker_dict["TOLOVE"][num], 41
+        speakers, model, trigger_id = speaker_dict["TOLOVE"][num], 30, 187
     elif choose == "赛马娘":
-        speakers, model = speaker_dict["赛马娘"][num], 61
+        speakers, model, trigger_id = speaker_dict["赛马娘"][num], 45, 272
     elif choose == "公主连结":
-        speakers, model = speaker_dict["公主连结"][num], 65
+        speakers, model, trigger_id = speaker_dict["公主连结"][num], 48, 289
     elif choose == "魔法纪录":
-        speakers, model = speaker_dict["魔法纪录"][num], 107
+        speakers, model, trigger_id = speaker_dict["魔法纪录"][num], 51, 306
     else:
         speakers = speaker_dict["柚子"][num]
         if num >= 12:
-            model = 31
+            model, trigger_id = 27, 170
         elif num >= 7:
-            model = 9
+            model, trigger_id = 6, 51
         else:
-            model = 1
-    return speakers, model
+            model, trigger_id = 0, 17
+    return speakers, model, trigger_id
 
 
 sv = Service(
@@ -674,99 +629,63 @@ sv = Service(
 )
 
 
-@sv.on_prefix([i + "中配" for i in speaker_dict.keys()])
+@sv.on_prefix([f"{i}中配" for i in speaker_dict.keys()])
 async def youzi_voice_cn(bot, ev):
     text = ev.raw_message
     content = text.split()
     category = content[0].split("中配")
     if category[1] != "":
-        content = [category[0] + "中配", category[1], content[-1]]
+        content = [f"{category[0]}中配", category[1], content[-1]]
+
     if len(content) == 2:
-        speaker, model = get_speakers(content[0][:-2])
         text_chjp = (
             f"[ZH]{content[1]}[ZH]"
             if content[0][:-2].strip() == "公主连结"
             else await chinese2katakana(content[1])
         )
-        A = getvoice(speaker, model)
+        A = MOETTSVoice(*get_speakers(content[0][:-2]))
     elif content[1].isdigit():
-        speaker, model = get_speakers(content[0][:-2], int(content[1]))
         text_chjp = (
-            f"[ZH]{content[1]}[ZH]"
+            f"[ZH]{content[2]}[ZH]"
             if content[0][:-2].strip() == "公主连结"
             else await chinese2katakana(content[1])
         )
-        A = getvoice(speaker, model)
+        A = MOETTSVoice(*get_speakers(content[0][:-2], int(content[1])))
     else:
         await bot.send(ev, sv_help)
         return
     try:
-        voice = await A.gethash(text_chjp)
+        voice = await A.get_voice(text_chjp)
         final_send = MessageSegment.record(voice)
         await bot.send(ev, final_send)
-    except:
+    except Exception:
         await bot.send(ev, "生成失败，红豆泥斯密马赛~")
 
 
-@sv.on_prefix([i + "日配" for i in speaker_dict.keys()])
+@sv.on_prefix([f"{i}日配" for i in speaker_dict.keys()])
 async def youzi_voice_ja(bot, ev):
     text = ev.raw_message
     content = text.split()
     category = content[0].split("日配")
     if category[1] != "":
-        content = [category[0] + "日配", category[1], content[-1]]
+        content = [f"{category[0]}日配", category[1], content[-1]]
     if len(content) == 2:
-        speaker, model = get_speakers(content[0][:-2])
         text_chjp = await translate(content[1])
         if content[0][:-2].strip() == "公主连结":
             text_chjp = f"[JA]{text_chjp}[JA]"
-        A = getvoice(speaker, model)
+        A = MOETTSVoice(*get_speakers(content[0][:-2]))
     elif content[1].isdigit():
-        speaker, model = get_speakers(content[0][:-2], int(content[1]))
         text_chjp = await translate(content[2])
         if content[0][:-2].strip() == "公主连结":
             text_chjp = f"[JA]{text_chjp}[JA]"
-        A = getvoice(speaker, model)
+        A = MOETTSVoice(*get_speakers(content[0][:-2], int(content[1])))
     else:
         await bot.send(ev, sv_help)
         return
     await bot.send(ev, text_chjp)
-    voice = await A.gethash(text_chjp)
+    voice = await A.get_voice(text_chjp)
     final_send = MessageSegment.record(voice)
     await bot.send(ev, final_send)
-
-
-@sv.on_prefix(["#" + i + "日配" for i in XCW])
-@sv.on_prefix(["#" + i + "中配" for i in genshin])
-@sv.on_prefix(["#" + i + "中配" for i in XCW])
-async def voice(bot, ev):
-    try:
-        text: str = ev.message.extract_plain_text().strip()
-        if not text:
-            await bot.send(ev, "请输入需要合成语音的文本", at_sender=True)
-            return
-        preid: str = ev.prefix[1:-2]
-        prelang: str = ev.prefix[-2:]
-        if prelang == "中配":
-            if preid in XCW:
-                text = await chinese2katakana(text)
-                voice = await voiceApi(XcwAPI + text)
-            else:
-                text = replace_text(text)
-                voice = await voiceApi(
-                    GenshinAPI, {"speaker": preid, "text": text, "length": 1.0}
-                )
-        else:
-            text = await translate(text)
-            voice = await voiceApi(XcwAPI + text)
-        data = MessageSegment.record(voice)
-    except Error as e:
-        data = f"发生错误：{e.error}"
-        sv.logger.error(data)
-    except Exception as e:
-        data = f"发生错误：{e}"
-        sv.logger.error(data)
-    await bot.send(ev, data)
 
 
 @sv.on_fullmatch("角色id列表")
@@ -777,64 +696,10 @@ async def speaker_list(bot, ev):
 
 @sv.on_rex(r"^(语音|配音)(帮助)?$")
 async def voicehelp(bot, ev):
-    image = Image.open(os.path.join(os.path.dirname(__file__), f"help.jpg"))
+    image = Image.open(os.path.join(os.path.dirname(__file__), "help.jpg"))
     draw = ImageDraw.Draw(image)  # 建立一个绘图的对象
-    font = ImageFont.truetype(
-        os.path.join(os.path.dirname(__file__), f"SIMYOU.ttf"), 35
-    )
-    font2 = ImageFont.truetype(
-        os.path.join(os.path.dirname(__file__), f"SIMYOU.ttf"), 30
-    )
-    text1 = speaker_id
-    text = ""
-    textcn = ""
-    textxcw = "[小仓唯/镜华]指令:#小仓唯[中配/日配] + 文本,如#小仓唯日配 你好"
-    text2 = "以下角色无需填写类别,指令#[名字][中配(无日配)] + 文本,如#派蒙中配 你好"
-    for prime in genshin:
-        text3 = text
-        text += prime + " "
-        if len(text) > 30:
-            if len(text) < 33:
-                textcn += text + "\n"
-                text = ""
-            else:
-                textcn += text3 + "\n"
-                text = ""
-                text += prime + " "
-    textcn += text + "\n"
-    draw.text((84, 827), text1, font=font, fill="#2e59a7")
-    draw.text((84, 2880), textxcw, font=font2, fill="#531dab")
-    draw.text((84, 2920), text2, font=font2, fill="#531dab")
-    draw.text((84, 2960), textcn, font=font, fill="#2e59a7")
-    image.save(os.path.join(os.path.dirname(__file__), f"help2.jpg"))
-    help2 = os.path.join(os.path.dirname(__file__), f"help2.jpg")
+    font = ImageFont.truetype(os.path.join(os.path.dirname(__file__), "SIMYOU.ttf"), 35)
+    draw.text((84, 827), speaker_id, font=font, fill="#2e59a7")
+    image.save(os.path.join(os.path.dirname(__file__), "help2.jpg"))
+    help2 = os.path.join(os.path.dirname(__file__), "help2.jpg")
     await bot.send(ev, MessageSegment.image(f"file:///{help2}"))
-
-
-Genshin_list = (
-    (",", "，"),
-    (".", "。"),
-    ("!", "！"),
-    ("?", "？"),
-    (":", "："),
-    ("(", "（"),
-    ("<", "《"),
-    (">", "》"),
-    ("0", "零"),
-    ("1", "一"),
-    ("2", "二"),
-    ("3", "三"),
-    ("4", "四"),
-    ("5", "五"),
-    ("6", "六"),
-    ("7", "七"),
-    ("8", "八"),
-    ("9", "九"),
-)
-
-
-def replace_text(text):
-    for en, cn in Genshin_list:
-        text = text.replace(en, cn)
-    print(text)
-    return text

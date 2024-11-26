@@ -1,154 +1,105 @@
 import json
-from aiowebsocket.converses import AioWebSocket
 from lxml import etree
 import base64
-import aiohttp
-from typing import Union
+import httpx
 import random
 import asyncio
-import io
-import wave
+from string import ascii_lowercase, digits
 
-GenshinAPI = 'http://233366.proxy.nscc-gz.cn:8888'
-XcwAPI = 'http://prts.tencentbot.top/0/'
+ALPHABET = ascii_lowercase + digits
+
+COOKIES = {
+    "__gads": "ID=0913d7b7838088a9-22d4a86186d500c8:T=1660228904:RT=1660228904:S=ALNI_MYLAxIRws8hObfvoeF5wkg6F8_1qg",
+    "__gpi": "UID=00000880c2f1ffa9:T=1660228904:RT=1660228904:S=ALNI_ManV7rXnEUgMAuUxsLEFkSYonxQRQ",
+    "__utmc": "79062217",
+    "__utmz": "79062217.1660228909.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)",
+    "__utmt": "1",
+    "__utma": "79062217.169553450.1660228904.1660228904.1660228904.1",
+    "__utmb": "79062217.4.10.1660228909",
+}
+
+HEADERS = {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+    "Cache-Control": "max-age=0",
+    "Connection": "keep-alive",
+    "Origin": "https://www.ltool.net",
+    "Referer": "https://www.ltool.net/chinese-simplified-and-traditional-characters-pinyin-to-katakana-converter-in-simplified-chinese.php",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "same-origin",
+    "Sec-Fetch-User": "?1",
+    "Upgrade-Insecure-Requests": "1",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.47",
+    "sec-ch-ua": '"Chromium";v="104", " Not A;Brand";v="99", "Microsoft Edge";v="104"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+}
+
 
 def local_hash():
-    alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
-    a = ""
-    for it in range(10):
-        char = random.choice(alphabet)
-        a = a+char
-    return a
+    return "".join(random.choice(ALPHABET) for _ in range(10))
+
 
 async def chinese2katakana(text):
-    cookies = {
-        '__gads': 'ID=0913d7b7838088a9-22d4a86186d500c8:T=1660228904:RT=1660228904:S=ALNI_MYLAxIRws8hObfvoeF5wkg6F8_1qg',
-        '__gpi': 'UID=00000880c2f1ffa9:T=1660228904:RT=1660228904:S=ALNI_ManV7rXnEUgMAuUxsLEFkSYonxQRQ',
-        '__utmc': '79062217',
-        '__utmz': '79062217.1660228909.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)',
-        '__utmt': '1',
-        '__utma': '79062217.169553450.1660228904.1660228904.1660228904.1',
-        '__utmb': '79062217.4.10.1660228909',
-    }
 
-    headers = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-        'Cache-Control': 'max-age=0',
-        'Connection': 'keep-alive',
-        'Origin': 'https://www.ltool.net',
-        'Referer': 'https://www.ltool.net/chinese-simplified-and-traditional-characters-pinyin-to-katakana-converter-in-simplified-chinese.php',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'same-origin',
-        'Sec-Fetch-User': '?1',
-        'Upgrade-Insecure-Requests': '1',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.47',
-        'sec-ch-ua': '"Chromium";v="104", " Not A;Brand";v="99", "Microsoft Edge";v="104"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-    }
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            "https://www.ltool.net/chinese-simplified-and-traditional-characters-pinyin-to-katakana-converter-in-simplified-chinese.php",
+            headers=HEADERS,
+            data={
+                "contents": f"{text}",
+                "firstinput": "OK",
+                "option": "1",
+                "optionext": "zenkaku",
+            },
+            cookies=COOKIES,
+        )
+        a = resp.text
+    return "".join(etree.HTML(a).xpath("/html//form/div[5]/div/text()"))
 
-    data = {
-        'contents': f'{text}',
-        'firstinput': 'OK',
-        'option': '1',
-        'optionext': 'zenkaku',
-    }
-    async with aiohttp.ClientSession() as session: 
-        async with session.post('https://www.ltool.net/chinese-simplified-and-traditional-characters-pinyin-to-katakana-converter-in-simplified-chinese.php', headers=headers, data=data, cookies=cookies) as resp:
-            a = await resp.text()
-    html = etree.HTML(a)
-    text = html.xpath("/html//form/div[5]/div/text()")
-    text_full = ""
-    for it in text:
-        text_full = text_full + it
-    #print(text_full)
-    return text_full
 
-class getvoice(object):
-    def __init__(self,speaker,num) :
+class MOETTSVoice:
+    def __init__(self, speaker: str, fn_num: int, trigger_id: int = 17):
         self.speaker = speaker
-        self.num = num
-        self.count_hash = 0
-        self.count = 0
-        
-    async def gethash(self,text):
-        if len(text) < 61 :
-            result = await self.gethash2(text)
-            return result
-        else:
-            round = int(len(text)/60)
-            IO_list = []
-            output_IO = io.BytesIO()
-            for it in range(round+1):
-                text2 = text[it*60:(it+1)*60]
-                await self.gethash2(text2)
-                IO_list += [self.b_io]
-            count = range(len(IO_list))
-            data = []
-            for it in count:
-                w = wave.open(IO_list[it], 'rb')
-                data.append([w.getparams(), w.readframes(w.getnframes())])
-                w.close()
-            output = wave.open(output_IO, 'wb')
-            output.setparams(data[0][0])
-            for it in count:
-                output.writeframes(data[it][1])
-            output.close()   
-            base64_str = 'base64://' + base64.b64encode(output_IO.getvalue()).decode()
-            return base64_str
+        self.num = fn_num
+        self.trigger_id = trigger_id
 
-    async def gethash2(self,text):
-        temphash = local_hash()
-        uri = 'wss://skytnt-moe-tts.hf.space/queue/join'
-        async with AioWebSocket(uri) as aws:
-            converse = aws.manipulator
-            while True:
-                receive = await converse.receive()
-                #print(receive)
-                a = json.loads(receive.decode())
-                if a["msg"] == "send_hash":
-                    if self.count_hash == 0:
-                        message = {"session_hash":temphash,"fn_index":0}
-                        message = str(message)
-                        message = message.replace(" ","")
-                        message = message.replace("'",'"')
-                        message = message.replace("False",'false')                        
-                        #print(message)
-                        await converse.send(message)
-                    self.count_hash = 1
-                if a["msg"] == "send_data":
-                    if self.count == 0:
-                        message = {"fn_index":self.num,"data":[text,self.speaker,1,False],"session_hash":temphash}
-                        message = str(message)
-                        #message = message.replace(" ","")
-                        message = message.replace("'",'"')
-                        message = message.replace("False",'false')
-                        #print(message)
-                        await converse.send(message)
-                    self.count = 1
-                if a["msg"] == "process_completed":
-                    self.count = 0
-                    self.count_hash = 0
-                    self.voicehash = a["output"]["data"][1]
-                    break
-        return 'base64://' + self.voicehash[len("data:audio/wav;base64,"):]
+    async def get_voice(self, text):
+        async with httpx.AsyncClient() as client:
+            hash = local_hash()
+            await client.post(
+                "https://skytnt-moe-tts.hf.space/queue/join?__theme=light",
+                json={
+                    "fn_index": self.num,
+                    "data": [text, self.speaker, 1, False],
+                    "session_hash": hash,
+                    "event_data": None,
+                    "trigger_id": self.trigger_id,
+                },
+            )
 
-async def voiceApi(api: str, params: Union[str, dict] = None) -> str:
-    async with aiohttp.request('GET', api, params=params) as resp:
-        if resp.status == 200:
-            data = await resp.read()
-        else:
-            raise Error(resp.status)
-    return 'base64://' + base64.b64encode(data).decode()
+            async with client.stream(
+                "GET", f"https://skytnt-moe-tts.hf.space/queue/data?session_hash={hash}"
+            ) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if line:
+                        if line.startswith("data: "):
+                            data_str = line.replace("data: ", "")
+                            event_data: dict = json.loads(data_str)
 
-class Error(Exception):
-    def __init__(self, args: object) -> None:
-        self.error = args
+                            msg = event_data.get("msg")
+                            if msg == "process_completed":
+                                data_url = event_data["output"]["data"][1]["url"]
+                                break
+
+            data = await client.get(data_url)
+            return "base64://" + base64.b64encode(data.content).decode()
+
 
 if __name__ == "__main__":
-    A = getvoice("綾地寧々",1)
+    A = MOETTSVoice("綾地寧々", 0, 17)
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(A.gethash("こんにちは。"))
+    result = loop.run_until_complete(A.get_voice("こんにちは。"))
     print(result)
